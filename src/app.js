@@ -67,6 +67,17 @@ app.use((err, req, res, next) => {
     .json({ error: err.message || "Internal Server Error" });
 });
 
+// CORS (keep credentials true so cookies are sent in web flows)
+const allowed = (process.env.CORS_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true); // allow tools like Postman or mobile apps (null origin)
+    if (allowed.includes(origin)) return cb(null, true);
+    cb(new Error('CORS not allowed'));
+  },
+  credentials: true
+}));
+
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
@@ -74,3 +85,4 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
+
